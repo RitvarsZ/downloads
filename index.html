@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body>
+  <button onclick="testOld()">Test old way</button>
+  <button onclick="testNew()">Test new way</button>
+
+  <script>
+    function testOld() {
+      // Test old way by creating a link and clicking it
+      const data = new Blob(['Hello, world!'], {type: 'text/plain'});
+      const url = window.URL.createObjectURL(data);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'hello.txt'
+      window.document.body.appendChild(link);
+      link.click();
+      window.document.body.removeChild(link);
+    }
+
+    async function testNew() {
+      // Test with file system access API
+      const data = new Blob(['Hello, world!'], {type: 'text/plain'});
+      try {
+        var handle = await window.showSaveFilePicker({
+          suggestedName: 'hello.txt',
+          types: [
+            {
+              description: 'Text file',
+              accept: { 'text/plain': ['.txt'] },
+            },
+          ],
+        })
+      } catch (e) {
+        console.log('AbortError', e)
+        return
+      }
+
+      try {
+        const writeHandle = await handle.createWritable();
+        await writeHandle.write(data),
+        await writeHandle.close()
+      } catch (e) {
+        console.log('WriteError', e)
+      }
+    }
+  </script>
+</body>
+</html>
